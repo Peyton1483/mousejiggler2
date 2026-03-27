@@ -26,10 +26,10 @@ public partial class MainForm : Form
   ///     Constructor for use by the form designer.
   /// </summary>
   public MainForm ()
-      : this (false, false, JiggleMode.Normal, false, 1, 1, false)
+      : this (false, false, JiggleMode.Normal, false, 1.0, 1, false)
   { }
 
-  public MainForm (bool jiggleOnStartup, bool minimizeOnStartup, JiggleMode jiggleMode, bool randomTimer, int jigglePeriod, int jiggleDistance, bool showSettings)
+  public MainForm (bool jiggleOnStartup, bool minimizeOnStartup, JiggleMode jiggleMode, bool randomTimer, double jigglePeriod, int jiggleDistance, bool showSettings)
   {
     this.InitializeComponent ();
 
@@ -51,12 +51,12 @@ public partial class MainForm : Form
     this.cbRandom.Checked = randomTimer;
 
     // Validate jigglePeriod before setting it
-    if (jigglePeriod >= this.nudPeriod.Minimum && jigglePeriod <= this.nudPeriod.Maximum)
-      this.nudPeriod.Value = jigglePeriod;
+    if ((decimal)jigglePeriod >= this.nudPeriod.Minimum && (decimal)jigglePeriod <= this.nudPeriod.Maximum)
+      this.nudPeriod.Value = (decimal)jigglePeriod;
     else
       // Handle invalid jigglePeriod value, e.g., set to default or raise an error
       this.nudPeriod.Value = this.nudPeriod.Minimum; // or any default value within the range
-    this.JigglePeriod = (int)this.nudPeriod.Value;
+    this.JigglePeriod = (double)this.nudPeriod.Value;
 
     // Validate jiggleDistance before setting it
     if (jiggleDistance >= this.nudDistance.Minimum && jiggleDistance <= this.nudDistance.Maximum)
@@ -96,7 +96,7 @@ public partial class MainForm : Form
     {
       var mode = this.JiggleMode.ToString ();
       var rnd = this.RandomTimer ? $@" with random variation," : string.Empty;
-      var text = $@"Jiggling mouse every {this.JigglePeriod} s,{rnd} mode: {mode} (Δ {this.JiggleDistance}).";
+      var text = $@"Jiggling mouse every {this.JigglePeriod:0.##} s,{rnd} mode: {mode} (Δ {this.JiggleDistance}).";
       this.niTray.Text = text.Length > MaxNotifyIconTextLength ? text[..(MaxNotifyIconTextLength - 3)] + "..." : text;
     }
   }
@@ -143,7 +143,7 @@ public partial class MainForm : Form
 
   private void cbRandom_CheckedChanged (object sender, EventArgs e) => this.RandomTimer = this.cbRandom.Checked;
 
-  private void nudPeriod_ValueChanged (object sender, EventArgs e) => this.JigglePeriod = (int)this.nudPeriod.Value;
+  private void nudPeriod_ValueChanged (object sender, EventArgs e) => this.JigglePeriod = (double)this.nudPeriod.Value;
 
   private void nudDistance_ValueChanged (object sender, EventArgs e) => this.JiggleDistance = (int)this.nudDistance.Value;
 
@@ -192,12 +192,13 @@ public partial class MainForm : Form
 
     if (this.RandomTimer)
     {
-      var newInterval = Random.Shared.Next(1, this.JigglePeriod + 1) * 1000;
-      this.lbPeriod.Text = $@"{newInterval / 1000} s";
-      this.jiggleTimer.Interval = newInterval;
+      // Random interval between 0.1s and JigglePeriod
+      var newIntervalMs = (int)(Random.Shared.NextDouble() * (this.JigglePeriod - 0.1) * 1000 + 100);
+      this.lbPeriod.Text = $@"{newIntervalMs / 1000.0:0.##} s";
+      this.jiggleTimer.Interval = newIntervalMs;
     }
     else
-      this.jiggleTimer.Interval = this.JigglePeriod * 1000;
+      this.jiggleTimer.Interval = (int)(this.JigglePeriod * 1000);
   }
 
   #endregion Do the Jiggle!
@@ -228,7 +229,7 @@ public partial class MainForm : Form
 
   #region Settings property backing fields
 
-  private int _jigglePeriod;
+  private double _jigglePeriod;
 
   private bool _minimizeOnStartup;
 
@@ -290,7 +291,7 @@ public partial class MainForm : Form
 
   [DesignerSerializationVisibility (DesignerSerializationVisibility.Hidden)]
 
-  public int JigglePeriod
+  public double JigglePeriod
   {
     get => this._jigglePeriod;
     set
@@ -299,8 +300,8 @@ public partial class MainForm : Form
       Settings.Default.JigglePeriod = value;
       Settings.Default.Save ();
 
-      this.jiggleTimer.Interval = value * 1000;
-      this.lbPeriod.Text = $@"{value} s";
+      this.jiggleTimer.Interval = (int)(value * 1000);
+      this.lbPeriod.Text = $@"{value:0.##} s";
 
       this.OnPropertyChanged (nameof (this.JigglePeriod));
     }

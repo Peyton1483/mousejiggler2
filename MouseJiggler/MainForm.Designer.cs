@@ -148,14 +148,16 @@ namespace ArkaneSystems.MouseJiggler
       // 
       // nudPeriod
       // 
+      this.nudPeriod.DecimalPlaces = 1;
+      this.nudPeriod.Increment = new decimal (new int[] { 1, 0, 0, 65536 }); // 0.1
       this.nudPeriod.Location = new System.Drawing.Point (136, 36);
       this.nudPeriod.Maximum = new decimal (new int[] { 10800, 0, 0, 0 });
-      this.nudPeriod.Minimum = new decimal (new int[] { 1, 0, 0, 0 });
+      this.nudPeriod.Minimum = new decimal (new int[] { 1, 0, 0, 65536 }); // 0.1
       this.nudPeriod.Name = "nudPeriod";
       this.nudPeriod.Size = new System.Drawing.Size (147, 23);
       this.nudPeriod.TabIndex = 4;
       this.nudPeriod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this.nudPeriod.Value = new decimal (new int[] { 1, 0, 0, 0 });
+      this.nudPeriod.Value = new decimal (new int[] { 10, 0, 0, 65536 }); // 1.0
       this.nudPeriod.ValueChanged += this.nudPeriod_ValueChanged;
       // 
       // lblPeriodLabel

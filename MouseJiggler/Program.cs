@@ -68,7 +68,7 @@ public static class Program
     }
   }
 
-  private static int RootHandler (bool jiggle, bool minimized, JiggleMode mode, bool random, bool settings, int seconds, int distance)
+  private static int RootHandler (bool jiggle, bool minimized, JiggleMode mode, bool random, bool settings, double seconds, int distance)
   {
     // Prepare Windows Forms to run the application.
     _ = Application.SetHighDpiMode (HighDpiMode.SystemAware);
@@ -126,18 +126,18 @@ public static class Program
       DefaultValueFactory = _ => Settings.Default.RandomTimer
     };
 
-    // -s 60 --seconds 60
-    var optPeriod = new Option<int>("--seconds", "-s")
+    // -s 0.5 --seconds 0.5
+    var optPeriod = new Option<double>("--seconds", "-s")
     {
-      Description = "Set X number of seconds for the jiggle interval.",
+      Description = "Set number of seconds for the jiggle interval (minimum 0.1).",
       DefaultValueFactory = _ => Settings.Default.JigglePeriod
     };
 
     optPeriod.Validators.Add (result =>
     {
       var value = result.GetValue(optPeriod);
-      if (value < 1)
-        result.AddError ("Period cannot be shorter than 1 second.");
+      if (value < 0.1)
+        result.AddError ("Period cannot be shorter than 0.1 seconds.");
       else if (value > 10800)
         result.AddError ("Period cannot be longer than 10800 seconds.");
     });
